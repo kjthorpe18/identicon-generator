@@ -6,7 +6,6 @@ defmodule Identicon do
   @doc """
   Main runner funcion that calls all other necessary functions
   """
-
   def main(input) do
     input
     |> hash_input
@@ -22,6 +21,9 @@ defmodule Identicon do
     File.write("#{input}.png", image)
   end
 
+  @doc """
+    Colors in the identicon image
+  """
   def draw_image(%Identicon.Image{color: color, pixel_map: pixel_map}) do
     image = :egd.create(250, 250)
     fill = :egd.color(color)
@@ -33,6 +35,9 @@ defmodule Identicon do
     :egd.render(image)
   end
 
+  @doc """
+    Creates the pixel map needed to create the image in the draw image step
+  """
   def build_pixel_map(%Identicon.Image{grid: grid} = image) do
     pixel_map = Enum.map grid, fn({_code, index}) -> 
       horizontal = rem(index, 5) * 50
@@ -46,6 +51,10 @@ defmodule Identicon do
     %Identicon.Image{image | pixel_map: pixel_map}
   end
 
+  @doc """
+    Filters out odd numbers from the list of generated values. This is done so only 
+    the even values are colored in the identicon.
+  """
   def filter_odd_squares(%Identicon.Image{grid: grid} = image) do 
     grid = Enum.filter grid, fn({code, _index}) -> 
       rem(code, 2) == 0 
@@ -59,12 +68,18 @@ defmodule Identicon do
 
     ## Examples
 
+          iex> Identicon.mirror_row([1, 2, 3])
+          [1, 2, 3, 2, 1]
+
   """
   def mirror_row(row) do
     [first, second | _tail] = row
     row ++ [second, first]
   end
 
+  @doc """
+    Creates a grid from the hash list for processing, mirroring the rows in the process
+  """
   def build_grid(%Identicon.Image{hex: hex} = image) do
     grid = 
       hex
@@ -76,8 +91,10 @@ defmodule Identicon do
     %Identicon.Image{image | grid: grid}
   end
 
+  @doc """
+  Picks the identicon color from the first three numbers from hash list
+  """
   def pick_color(%Identicon.Image{hex: [r, g, b | _tail]} = image) do
-    # Create a new struct from the old one, but with the color
     %Identicon.Image{image | color: {r, g, b}}
   end
 
@@ -86,7 +103,7 @@ defmodule Identicon do
 
   ## Examples
 
-      iex> hash_input("asdf")
+      iex> Identicon.hash_input("asdf")
       %Identicon.Image{
         hex: [145, 46, 200, 3, 178, 206, 73, 228, 165, 65, 6, 141, 73, 90, 181,
         112]
